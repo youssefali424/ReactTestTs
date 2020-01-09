@@ -3,40 +3,41 @@ import First from './fullTest';
 import React from 'react';
 import {SafeAreaView, ActivityIndicator, View} from 'react-native';
 import Spinner from 'react-native-loading-spinner-overlay';
+import { connect } from 'react-redux';
 
 interface State {
   loading: boolean;
 }
-export default class App extends React.Component<Props, State> {
+class App extends React.Component<Props, State> {
   constructor(props) {
     super(props);
     this.state = {loading: true};
-    this.retrieveLanguage();
+    // this.retrieveLanguage();
   }
   async retrieveLanguage () {
     await retrieveLanguage();
     this.setState({loading: false});
   }
   render() {
-    if (this.state.loading) {
-      return (
-        <>
-          <Spinner
+    return (
+      <>
+        <SafeAreaView>
+        <Spinner
             //visibility of Overlay Loading Spinner
-            visible={this.state.loading}
+            visible={this.props.loading}
             //Text with the Spinner
             textContent={'Loading...'}
             //Text style of the Spinner Text
           />
-        </>
-      );
-    }
-    return (
-      <>
-        <SafeAreaView>
           <First />
         </SafeAreaView>
       </>
     );
   }
 }
+const mapStateToProps = (state) => {
+  console.log("app.tsx");
+  const { network } = state
+  return { network }
+};
+export default connect(mapStateToProps)(App);

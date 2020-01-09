@@ -28,13 +28,18 @@ import First from './src/app';
 import {Provider} from 'react-redux';
 import {createStore} from 'redux';
 import languageReducer from './src/reducer';
+import networkReducer from './src/networkReducer';
+
+const store = createStore(networkReducer);
 
 const App: () => React$Node = () => {
   return (
     <>
+    <Provider store={ store }>
       <SafeAreaView>
         <First />
       </SafeAreaView>
+      </Provider>
     </>
   );
 };

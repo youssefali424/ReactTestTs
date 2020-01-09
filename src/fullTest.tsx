@@ -1,24 +1,54 @@
 import React from 'react';
-import {View, Text, Picker} from 'react-native';
+import {View, Text, Picker, FlatList, ro} from 'react-native';
 import strings from './localStrings';
 import Main from './main';
 import {AsyncStorage} from 'react-native';
+import {connect } from 'react-redux';
+import getData from './network';
+import {NETWORKSTATE,setLoading} from './networkReducer';
+import { bindActionCreators } from 'redux';
 
 export interface Props {
+  network:NETWORKSTATE;
+  setLoading:Function;
 }
 
 interface State {
   name: string;
   language: string;
 }
+interface todo {
+  userId: Number;
+  id: Number;
+  title: String;
+  completed: boolean;
+}
 class First extends React.Component<Props, State> {
   state: State;
+  list: Array<todo>;
   constructor(props) {
     super(props);
     this.state = {
       name: 'how',
       language: 'en',
     };
+    this.list = [];
+    this.props.setLoading(true);
+  }
+  componentDidMount() {
+    const data = getData('');
+    data.subscribe({
+      next: result => {
+        console.log(result);
+        this.list = result;
+      },
+      complete: () => {
+        this.props.setLoading(false);
+        this.setState({});
+        console.log('done');
+      },
+      error: e => console.log(e),
+    });
   }
   render() {
     return (
@@ -46,16 +76,40 @@ class First extends React.Component<Props, State> {
           <Picker.Item label="softBoiledEgg" value="softBoiledEgg" />
           <Picker.Item label="choice" value="choice" />
         </Picker>
+        <FlatList
+          data={this.list}
+          renderItem={item => (
+            <View style={{flexDirection: 'row'}}>
+              <Text style={{flex: 1}}>{item.item.id}</Text>
+              <Text style={{flex: 1}}>{item.item.userId}</Text>
+              <Text style={{flex: 4}}>{item.item.title}</Text>
+              <Text style={{flex: 2}}>
+                {item.item.completed ? 'completed' : 'not yet'}
+              </Text>
+            </View>
+          )}
+          keyExtractor={item => item.id+''}
+        />
       </View>
     );
   }
   storeLanguage = async (val: string) => {
-    try { 
+    try {
       await AsyncStorage.setItem('@Language', val);
     } catch (error) {
       // Error saving data
     }
   };
 }
-
-export default First;
+const mapStateToProps = state => {
+  console.log('first.tsx');
+  console.log(state);
+  const {network} = state;
+  return {network};
+};
+const mapDispatchToProps = dispatch => (
+  bindActionCreators({
+    setLoading,
+  }, dispatch)
+);
+export default connect(mapStateToProps,mapDispatchToProps)(First);
